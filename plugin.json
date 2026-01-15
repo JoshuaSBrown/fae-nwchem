@@ -1,0 +1,14 @@
+{
+  "engine_name": "fae-nwchem",
+  "version": "1.0.0",
+  "description": "A nwchem metadata ingestion engine",
+  "authors": ["Joshua Brown"],
+  "license": "MIT",
+
+  "file_rules": {
+    "supported_extensions": [".nw"],
+    "unsupported_extensions": []
+  }
+
+}
+
