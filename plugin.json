@@ -1,5 +1,5 @@
 {
-  "engine_name": "fae-nwchem",
+  "name": "fae-nwchem",
   "version": "0.0.0",
   "description": "A nwchem metadata ingestion engine",
   "authors": ["Joshua Brown"],
