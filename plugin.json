@@ -1,14 +1,18 @@
 {
-  "name": "fae-nwchem",
-  "version": "0.0.0",
-  "description": "A nwchem metadata ingestion engine",
+  "name": "fae_nwchem",
+  "version": "0.0.1",
+  "provides": ["nwchem"],
+  "description": "A NWChem metadata ingestion engine",
   "authors": ["Joshua Brown"],
   "license": "MIT",
 
   "file_rules": {
     "supported_extensions": [".nw"],
     "unsupported_extensions": []
+  },
+
+  "execution": {
+    "runner": "python-fork-v1",
+    "entrypoint": "bin/plugin.py:main"
   }
-
 }
-

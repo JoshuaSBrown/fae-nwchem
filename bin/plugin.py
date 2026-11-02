@@ -371,11 +371,6 @@ class NWChemInputParser:
         
         if conv_match:
             result['convergence'] = float(conv_match.group('value'))
-        #conv_match = re.search(conv_pattern, dft_block)
-        print("convergence match")
-        print(conv_match)
-        #if conv_match:
-        #    result['convergence'] = conv_match.group(1).strip()
             
         # Parse dispersion
         disp_pattern = r'(?i)\bdisp\s*(?:vdw\s+)?(\d+)?'
@@ -656,13 +651,8 @@ def parse_nwchem_string(content: str) -> dict:
     return parser.parse_string(content)
 
 
-# Example usage and demonstration
-if __name__ == "__main__":
-    import json
-    import sys
-    
-    # Example NWChem input for testing
-    example_input = '''
+# Example NWChem input, parsed when the plugin is run with no file argument.
+EXAMPLE_INPUT = '''
 title "Water molecule DFT calculation"
 
 start water
@@ -690,26 +680,47 @@ end
 task dft optimize
 task dft freq
 '''
-    
-    # If a file path is provided as argument, parse that file
-    if len(sys.argv) > 1:
-        file_path = sys.argv[1]
+
+def main(argv=None) -> int:
+    """
+    fae plugin entrypoint.
+
+    fae passes the ingestion target as argv[1] and expects one JSON object on
+    stdout. Every top-level key must be listed in plugin.json's "provides",
+    so all parsed metadata is nested under the single "nwchem" key.
+
+    Called directly by fae's warm-fork runner (python-fork-v1) with
+    argv = [script, path], and via __main__ for one-shot runs.
+    """
+    import json
+    import sys
+
+    argv = sys.argv if argv is None else argv
+
+    if len(argv) > 1:
         try:
-            result = parse_nwchem_input(file_path)
-            print(json.dumps(result, indent=2))
-        except FileNotFoundError as e:
-            print(f"Error: {e}")
-            sys.exit(1)
-    else:
-        # Parse the example input
-        print("Example NWChem Input Parser Demo")
-        print("=" * 50)
-        result = parse_nwchem_string(example_input)
-        print(json.dumps(result, indent=2))
-        
-        print("\n" + "=" * 50)
-        print("Quick access to key information:")
-        print(f"  Basis set: {result.get('basis_set', {}).get('default', 'Not found')}")
-        print(f"  Method: {result.get('method', {}).get('primary', 'Not found')}")
-        if 'dft' in result.get('method', {}):
-            print(f"  XC Functional: {result['method']['dft'].get('xc_functional', 'Not specified')}")
+            result = parse_nwchem_input(argv[1])
+        except (FileNotFoundError, OSError, UnicodeDecodeError) as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps({'nwchem': result}, indent=2))
+        return 0
+
+    # No file given: parse the built-in example, for a human at a terminal.
+    print("Example NWChem Input Parser Demo")
+    print("=" * 50)
+    result = parse_nwchem_string(EXAMPLE_INPUT)
+    print(json.dumps({'nwchem': result}, indent=2))
+
+    print("\n" + "=" * 50)
+    print("Quick access to key information:")
+    print(f"  Basis set: {result.get('basis_set', {}).get('default', 'Not found')}")
+    print(f"  Method: {result.get('method', {}).get('primary', 'Not found')}")
+    if 'dft' in result.get('method', {}):
+        print(f"  XC Functional: {result['method']['dft'].get('xc_functional', 'Not specified')}")
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())
